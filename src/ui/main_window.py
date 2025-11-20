@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import messagebox
-# Asegúrate de que este archivo (customers_window.py) exista también
+from tkinter import messagebox, simpledialog # <-- Agregado simpledialog para pedir fechas
 from src.ui.customers_window import CustomersWindow
+from src.logic.reports import ReportService # <-- Importamos la lógica de reportes
 
 class MainWindow(tk.Toplevel):
     def __init__(self, parent, user_data):
@@ -12,20 +12,16 @@ class MainWindow(tk.Toplevel):
         # Configuración de la ventana
         self.title(f"AutoPy System - Usuario: {self.user_data['user_name']}")
         self.geometry("1024x768")
-        
-        # Maximizar ventana (compatible con Windows)
         self.state('zoomed') 
         
-        # Protocolo de cierre: Si cierran esta ventana, se apaga todo el sistema
         self.protocol("WM_DELETE_WINDOW", self.quit_app)
 
-        # Construcción de la interfaz
         self.create_menu()
         self.create_dashboard()
 
     def quit_app(self):
         if messagebox.askokcancel("Salir", "¿Desea salir del sistema?"):
-            self.master.destroy() # Cierra la raíz oculta y termina el programa
+            self.master.destroy()
 
     def create_menu(self):
         menu_bar = tk.Menu(self)
@@ -39,11 +35,25 @@ class MainWindow(tk.Toplevel):
         # --- MENU GESTIÓN ---
         crud_menu = tk.Menu(menu_bar, tearoff=0)
         menu_bar.add_cascade(label="Gestión", menu=crud_menu)
-        
-        # Botones para abrir los formularios
         crud_menu.add_command(label="Clientes", command=lambda: self.open_crud("Clientes"))
         crud_menu.add_command(label="Vehículos", command=lambda: self.open_crud("Vehículos"))
         crud_menu.add_command(label="Rentas", command=lambda: self.open_crud("Rentas"))
+
+        # --- MENU REPORTES (NUEVO) ---
+        report_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Reportes", menu=report_menu)
+        
+        # 1. Reporte Sencillo
+        report_menu.add_command(label="Inventario Vehículos (Sencillo)", 
+                                command=ReportService.export_simple_vehicles)
+        
+        # 2. Reporte Maestro Detalle
+        report_menu.add_command(label="Clientes y Rentas (Maestro-Detalle)", 
+                                command=ReportService.export_master_detail)
+        
+        # 3. Reporte Parametrizado (Pide fechas primero)
+        report_menu.add_command(label="Rentas por Fecha (Parametrizado)", 
+                                command=self.ask_date_report)
         
         # --- MENU AYUDA ---
         help_menu = tk.Menu(menu_bar, tearoff=0)
@@ -59,7 +69,19 @@ class MainWindow(tk.Toplevel):
 
     def open_crud(self, module_name):
         if module_name == "Clientes":
-            # Abre la ventana de Clientes pasando 'self' como padre
             CustomersWindow(self)
         else:
             messagebox.showinfo("En construcción", f"El módulo de {module_name} aún no está listo.")
+
+    def ask_date_report(self):
+        """
+        Función auxiliar para pedir las fechas antes de llamar al reporte parametrizado.
+        """
+        start_date = simpledialog.askstring("Reporte", "Fecha Inicio (YYYY-MM-DD):", parent=self)
+        if not start_date: return
+        
+        end_date = simpledialog.askstring("Reporte", "Fecha Fin (YYYY-MM-DD):", parent=self)
+        if not end_date: return
+        
+        # Llamamos a la lógica con los parámetros obtenidos
+        ReportService.export_parameterized(start_date, end_date)
