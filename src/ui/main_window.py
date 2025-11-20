@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
+from src.ui.rentals_window import RentalsWindow
 from src.ui.customers_window import CustomersWindow
 from src.ui.vehicles_window import VehiclesWindow  # <--- ESTA ERA LA QUE FALTABA
 from src.logic.reports import ReportService
@@ -71,7 +72,8 @@ class MainWindow(tk.Toplevel):
         elif module_name == "Vehículos":
             VehiclesWindow(self)
         elif module_name == "Rentas":
-            messagebox.showinfo("En construcción", "El módulo de Rentas está en desarrollo.")
+            RentalsWindow(self)
+            
 
     def ask_date_report(self):
         start_date = simpledialog.askstring("Reporte", "Fecha Inicio (YYYY-MM-DD):", parent=self)
