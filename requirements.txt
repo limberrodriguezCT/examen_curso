@@ -1,0 +1,7 @@
+pandas==2.2.0
+openpyxl==3.1.5
+xlsxwriter==3.1.9
+bcrypt==4.1.2
+tkcalendar==1.6.1
+matplotlib==3.8.2
+pillow==10.2.0
