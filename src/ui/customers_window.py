@@ -6,26 +6,41 @@ class CustomersWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Gestión de Clientes")
-        self.geometry("900x600")
-        self.config(bg="#f4f4f4")
+        self.geometry("1100x700")
+        self.config(bg="#F4F6F9") # Fondo suave del Dashboard
         
-        self.create_toolbar()
+        # --- ESTILOS DE LA TABLA (Treeview) ---
+        self.style = ttk.Style()
+        self.style.theme_use("clam") # 'clam' permite personalizar colores mejor que 'vista'
+        
+        # Encabezados de tabla
+        self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), 
+                             background="#343a40", foreground="white", relief="flat")
+        self.style.map("Treeview.Heading", background=[('active', '#23272b')])
+        
+        # Cuerpo de tabla
+        self.style.configure("Treeview", font=("Segoe UI", 10), rowheight=30, 
+                             background="white", fieldbackground="white")
+        self.style.map("Treeview", background=[('selected', '#007bff')]) # Azul al seleccionar
+
+        self.create_header()
         self.create_form()
         self.create_table()
         self.load_data()
 
-    def create_toolbar(self):
-        # Cumple con el punto "Barra de Herramientas" de la Rúbrica
-        toolbar = tk.Frame(self, bg="#ddd", height=40)
-        toolbar.pack(side=tk.TOP, fill=tk.X)
+    def create_header(self):
+        # Título superior
+        header_frame = tk.Frame(self, bg="#F4F6F9")
+        header_frame.pack(fill="x", padx=20, pady=(20, 10))
         
-        btn_help = tk.Button(toolbar, text="Ayuda (?)", command=self.show_help, bg="#ddd", relief=tk.FLAT)
-        btn_help.pack(side=tk.RIGHT, padx=10)
+        tk.Label(header_frame, text="👥 Directorio de Clientes", font=("Segoe UI", 20, "bold"), 
+                 bg="#F4F6F9", fg="#333").pack(side="left")
 
     def create_form(self):
-        frame_form = tk.LabelFrame(self, text="Datos del Cliente", bg="white", padx=10, pady=10)
-        frame_form.pack(fill="x", padx=10, pady=5)
-
+        # Tarjeta blanca para el formulario
+        card = tk.Frame(self, bg="white", padx=20, pady=20)
+        card.pack(fill="x", padx=20, pady=5)
+        
         # Variables
         self.var_id = tk.StringVar()
         self.var_name = tk.StringVar()
@@ -34,146 +49,39 @@ class CustomersWindow(tk.Toplevel):
         self.var_address = tk.StringVar()
         self.var_gender = tk.StringVar(value="M")
 
-        # Inputs
-        tk.Label(frame_form, text="Nombre Completo:", bg="white").grid(row=0, column=0, sticky="w")
-        tk.Entry(frame_form, textvariable=self.var_name, width=30).grid(row=0, column=1, padx=5, pady=5)
+        # Grid Layout
+        # Fila 1
+        self.create_label_entry(card, "Nombre Completo:", self.var_name, 0, 0, width=40)
+        self.create_label_entry(card, "No. Documento:", self.var_doc, 0, 2)
+        
+        # Fila 2
+        self.create_label_entry(card, "Teléfono:", self.var_phone, 1, 0)
+        
+        tk.Label(card, text="Género:", font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=1, column=2, sticky="w", pady=5)
+        ttk.Combobox(card, textvariable=self.var_gender, values=["M", "F"], state="readonly", width=18).grid(row=1, column=3, sticky="w", padx=5)
 
-        tk.Label(frame_form, text="No. Documento:", bg="white").grid(row=0, column=2, sticky="w")
-        tk.Entry(frame_form, textvariable=self.var_doc, width=20).grid(row=0, column=3, padx=5, pady=5)
+        # Fila 3 (Dirección ocupa más espacio)
+        tk.Label(card, text="Dirección:", font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=2, column=0, sticky="w", pady=5)
+        tk.Entry(card, textvariable=self.var_address, font=("Segoe UI", 10), bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ddd").grid(row=2, column=1, columnspan=3, sticky="ew", padx=5, ipady=5)
 
-        tk.Label(frame_form, text="Teléfono:", bg="white").grid(row=1, column=0, sticky="w")
-        tk.Entry(frame_form, textvariable=self.var_phone, width=20).grid(row=1, column=1, padx=5, pady=5)
+        # Botones de Acción
+        btn_frame = tk.Frame(card, bg="white")
+        btn_frame.grid(row=3, column=0, columnspan=4, pady=(20, 0), sticky="e")
 
-        tk.Label(frame_form, text="Género:", bg="white").grid(row=1, column=2, sticky="w")
-        tk.OptionMenu(frame_form, self.var_gender, "M", "F").grid(row=1, column=3, sticky="w")
+        self.create_button(btn_frame, "Guardar", "#28a745", self.save)
+        self.create_button(btn_frame, "Actualizar", "#17a2b8", self.update)
+        self.create_button(btn_frame, "Eliminar", "#dc3545", self.delete)
+        self.create_button(btn_frame, "Limpiar", "#6c757d", self.clear_form)
 
-        tk.Label(frame_form, text="Dirección:", bg="white").grid(row=2, column=0, sticky="w")
-        tk.Entry(frame_form, textvariable=self.var_address, width=50).grid(row=2, column=1, columnspan=3, sticky="w", padx=5)
+    def create_label_entry(self, parent, text, variable, row, col, width=20):
+        tk.Label(parent, text=text, font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=row, column=col, sticky="w", pady=5)
+        e = tk.Entry(parent, textvariable=variable, width=width, font=("Segoe UI", 10), 
+                     bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ddd")
+        e.grid(row=row, column=col+1, sticky="w", padx=5, pady=5, ipady=5)
 
-        # Botones de Acción (CRUD)
-        frame_buttons = tk.Frame(frame_form, bg="white")
-        frame_buttons.grid(row=3, column=0, columnspan=4, pady=10)
-
-        tk.Button(frame_buttons, text="Guardar", bg="#28a745", fg="white", width=12, command=self.save).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Actualizar", bg="#ffc107", width=12, command=self.update).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Eliminar", bg="#dc3545", fg="white", width=12, command=self.delete).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Limpiar", bg="#6c757d", fg="white", width=12, command=self.clear_form).pack(side=tk.LEFT, padx=5)
+    def create_button(self, parent, text, color, command):
+        tk.Button(parent, text=text, bg=color, fg="white", font=("Segoe UI", 9, "bold"), 
+                  relief="flat", cursor="hand2", padx=15, pady=5, command=command).pack(side="left", padx=5)
 
     def create_table(self):
-        frame_table = tk.Frame(self)
-        frame_table.pack(fill="both", expand=True, padx=10, pady=5)
-
-        columns = ("id", "nombre", "doc", "genero", "telefono", "direccion")
-        self.tree = ttk.Treeview(frame_table, columns=columns, show="headings")
-        
-        # Encabezados
-        self.tree.heading("id", text="ID")
-        self.tree.heading("nombre", text="Nombre Completo")
-        self.tree.heading("doc", text="Documento")
-        self.tree.heading("genero", text="Sexo")
-        self.tree.heading("telefono", text="Teléfono")
-        self.tree.heading("direccion", text="Dirección")
-
-        # Anchos
-        self.tree.column("id", width=30)
-        self.tree.column("nombre", width=200)
-        self.tree.column("doc", width=100)
-        self.tree.column("genero", width=50)
-
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(frame_table, orient=tk.VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscroll=scrollbar.set)
-        
-        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        # Evento de selección
-        self.tree.bind("<<TreeviewSelect>>", self.select_item)
-
-    def load_data(self):
-        # Limpiar tabla actual
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        
-        # Traer datos de la BD
-        rows = CustomerLogic.read_all()
-        for row in rows:
-            # Convertir row (sqlite3.Row) a tupla
-            self.tree.insert("", tk.END, values=(row['id'], row['full_name'], row['document_number'], row['gender'], row['number_telephone'], row['address']))
-
-    def select_item(self, event):
-        selection = self.tree.selection()
-        if selection:
-            item = self.tree.item(selection[0])
-            vals = item['values']
-            # Llenar formulario
-            self.var_id.set(vals[0])
-            self.var_name.set(vals[1])
-            self.var_doc.set(vals[2])
-            self.var_gender.set(vals[3])
-            self.var_phone.set(vals[4])
-            self.var_address.set(vals[5])
-
-    def save(self):
-        if not self.var_name.get() or not self.var_doc.get():
-            messagebox.showwarning("Error", "Nombre y Documento son obligatorios")
-            return
-
-        ok, msg = CustomerLogic.create(
-            self.var_name.get(), self.var_doc.get(), self.var_gender.get(), 
-            self.var_phone.get(), self.var_address.get()
-        )
-        if ok:
-            messagebox.showinfo("Éxito", msg)
-            self.clear_form()
-            self.load_data()
-        else:
-            messagebox.showerror("Error", msg)
-
-    def update(self):
-        if not self.var_id.get():
-            messagebox.showwarning("Error", "Seleccione un cliente para actualizar")
-            return
-        
-        ok, msg = CustomerLogic.update(
-            self.var_id.get(), self.var_name.get(), self.var_doc.get(), 
-            self.var_gender.get(), self.var_phone.get(), self.var_address.get()
-        )
-        if ok:
-            messagebox.showinfo("Éxito", msg)
-            self.clear_form()
-            self.load_data()
-        else:
-            messagebox.showerror("Error", msg)
-
-    def delete(self):
-        if not self.var_id.get():
-            messagebox.showwarning("Error", "Seleccione un cliente para eliminar")
-            return
-        
-        confirm = messagebox.askyesno("Confirmar", "¿Realmente desea eliminar este cliente?")
-        if confirm:
-            ok, msg = CustomerLogic.delete(self.var_id.get())
-            if ok:
-                messagebox.showinfo("Éxito", msg)
-                self.clear_form()
-                self.load_data()
-            else:
-                messagebox.showerror("Error", msg)
-
-    def clear_form(self):
-        self.var_id.set("")
-        self.var_name.set("")
-        self.var_doc.set("")
-        self.var_phone.set("")
-        self.var_address.set("")
-        self.var_gender.set("M")
-
-    def show_help(self):
-        messagebox.showinfo("Ayuda", "Llene los campos y presione Guardar.\nPara editar, seleccione de la tabla.")
-
-if __name__ == "__main__":
-    # Prueba unitaria visual
-    root = tk.Tk()
-    app = CustomersWindow(root)
-    root.mainloop()
+        frame_table = tk.Frame(self, bg="white")
