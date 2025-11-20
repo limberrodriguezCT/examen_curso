@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 from src.ui.rentals_window import RentalsWindow
 from src.ui.customers_window import CustomersWindow
-from src.ui.vehicles_window import VehiclesWindow  # <--- ESTA ERA LA QUE FALTABA
+from src.ui.vehicles_window import VehiclesWindow  
+from src.logic.backup import BackupService  
+from src.ui.help_window import HelpWindow
 from src.logic.reports import ReportService
 
 class MainWindow(tk.Toplevel):
@@ -32,6 +34,27 @@ class MainWindow(tk.Toplevel):
         file_menu = tk.Menu(menu_bar, tearoff=0)
         menu_bar.add_cascade(label="Archivo", menu=file_menu)
         file_menu.add_command(label="Salir", command=self.quit_app)
+        
+        def open_help(self):
+             HelpWindow(self)
+
+# Opción de Respaldo (Solo si es Admin, o para todos según prefieras)
+        if self.role == "Administrador":
+            file_menu.add_command(label="Crear Respaldo (Backup)", command=BackupService.create_backup)
+            file_menu.add_command(label="Restaurar Base de Datos", command=BackupService.restore_backup)
+            file_menu.add_separator()
+            
+        file_menu.add_command(label="Salir", command=self.quit_app)
+
+        # ... (Menú Gestión y Reportes quedan igual) ...
+
+        # --- MENU AYUDA ---
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Ayuda", menu=help_menu)
+        
+        # Conectar a la nueva ventana de ayuda
+        help_menu.add_command(label="Manual de Usuario", command=self.open_help)
+        help_menu.add_command(label="Acerca de", command=lambda: messagebox.showinfo("AutoPy", "Sistema de Rentas v1.0\nExamen Final"))
 
         # --- MENU GESTIÓN ---
         crud_menu = tk.Menu(menu_bar, tearoff=0)
@@ -83,3 +106,5 @@ class MainWindow(tk.Toplevel):
         if not end_date: return
         
         ReportService.export_parameterized(start_date, end_date)
+        
+        
