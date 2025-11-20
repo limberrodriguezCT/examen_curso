@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
-from src.ui.rentals_window import RentalsWindow
 from src.ui.customers_window import CustomersWindow
-from src.ui.vehicles_window import VehiclesWindow  
-from src.logic.backup import BackupService  
-from src.ui.help_window import HelpWindow
+from src.ui.vehicles_window import VehiclesWindow
+from src.ui.rentals_window import RentalsWindow
 from src.logic.reports import ReportService
+from src.logic.backup import BackupService
+from src.ui.help_window import HelpWindow
 
 class MainWindow(tk.Toplevel):
     def __init__(self, parent, user_data):
@@ -33,28 +33,14 @@ class MainWindow(tk.Toplevel):
         # --- MENU ARCHIVO ---
         file_menu = tk.Menu(menu_bar, tearoff=0)
         menu_bar.add_cascade(label="Archivo", menu=file_menu)
-        file_menu.add_command(label="Salir", command=self.quit_app)
         
-        def open_help(self):
-             HelpWindow(self)
-
-# Opción de Respaldo (Solo si es Admin, o para todos según prefieras)
+        # Opciones exclusivas de Administrador
         if self.role == "Administrador":
             file_menu.add_command(label="Crear Respaldo (Backup)", command=BackupService.create_backup)
             file_menu.add_command(label="Restaurar Base de Datos", command=BackupService.restore_backup)
             file_menu.add_separator()
             
         file_menu.add_command(label="Salir", command=self.quit_app)
-
-        # ... (Menú Gestión y Reportes quedan igual) ...
-
-        # --- MENU AYUDA ---
-        help_menu = tk.Menu(menu_bar, tearoff=0)
-        menu_bar.add_cascade(label="Ayuda", menu=help_menu)
-        
-        # Conectar a la nueva ventana de ayuda
-        help_menu.add_command(label="Manual de Usuario", command=self.open_help)
-        help_menu.add_command(label="Acerca de", command=lambda: messagebox.showinfo("AutoPy", "Sistema de Rentas v1.0\nExamen Final"))
 
         # --- MENU GESTIÓN ---
         crud_menu = tk.Menu(menu_bar, tearoff=0)
@@ -79,7 +65,8 @@ class MainWindow(tk.Toplevel):
         # --- MENU AYUDA ---
         help_menu = tk.Menu(menu_bar, tearoff=0)
         menu_bar.add_cascade(label="Ayuda", menu=help_menu)
-        help_menu.add_command(label="Acerca de", command=lambda: messagebox.showinfo("AutoPy", "Sistema de Rentas v1.0"))
+        help_menu.add_command(label="Manual de Usuario", command=self.open_help)
+        help_menu.add_command(label="Acerca de", command=lambda: messagebox.showinfo("AutoPy", "Sistema de Rentas v1.0\nExamen Final"))
 
     def create_dashboard(self):
         frame = tk.Frame(self, bg="#f0f0f0")
@@ -89,14 +76,12 @@ class MainWindow(tk.Toplevel):
         tk.Label(frame, text=f"Panel de Control - Rol: {self.role}", font=("Arial", 14), bg="#f0f0f0").pack(pady=10)
 
     def open_crud(self, module_name):
-        # Aquí estaba el error visual. Al pegar esto completo se arregla la indentación.
         if module_name == "Clientes":
             CustomersWindow(self)
         elif module_name == "Vehículos":
             VehiclesWindow(self)
         elif module_name == "Rentas":
             RentalsWindow(self)
-            
 
     def ask_date_report(self):
         start_date = simpledialog.askstring("Reporte", "Fecha Inicio (YYYY-MM-DD):", parent=self)
@@ -106,5 +91,6 @@ class MainWindow(tk.Toplevel):
         if not end_date: return
         
         ReportService.export_parameterized(start_date, end_date)
-        
-        
+
+    def open_help(self):
+        HelpWindow(self)
