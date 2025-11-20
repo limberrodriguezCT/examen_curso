@@ -1,55 +1,75 @@
 import sqlite3
 import os
+import bcrypt # Necesitamos bcrypt aquí para crear las claves
 
-# 1. Definimos las rutas exactas para que Windows no se pierda
-# Esto busca la carpeta raíz del proyecto automáticamente
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Ruta donde se guardará la base de datos (carpeta 'data')
 DB_PATH = os.path.join(BASE_DIR, 'data', 'autopy.sqlite3')
-
-# Ruta donde está el script SQL para crear las tablas
 SCHEMA_PATH = os.path.join(BASE_DIR, 'src', 'database', 'schema.sql')
 
 def get_connection():
-    """
-    Retorna la conexión a la base de datos.
-    Si la carpeta 'data' no existe, la crea.
-    """
-    # Crear carpeta data si no existe
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    
     conn = sqlite3.connect(DB_PATH)
-    # Activar llaves foráneas (FOREIGN KEYS)
     conn.execute("PRAGMA foreign_keys = ON")
-    # Permitir acceder a columnas por nombre (ej: row['id'])
     conn.row_factory = sqlite3.Row 
     return conn
 
+def seed_data(conn):
+    """
+    Esta función es tu 'DatabaseSeeder'. Crea los datos por defecto.
+    """
+    print("--- Ejecutando Semillas (Seeds) ---")
+    cursor = conn.cursor()
+    
+    # 1. Roles (Ya estaban en el schema, pero aseguramos)
+    cursor.execute("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'Administrador')")
+    cursor.execute("INSERT OR IGNORE INTO roles (id, name) VALUES (2, 'Agente')")
+    
+    # 2. Usuarios por Defecto
+    users_to_create = [
+        (1, "admin", "admin123", 1),   # ID, user, pass, role_id
+        (2, "agente", "agente123", 2)
+    ]
+    
+    for uid, uname, upass, urole in users_to_create:
+        # Verificamos si existe
+        cursor.execute("SELECT id FROM users WHERE user_name = ?", (uname,))
+        if not cursor.fetchone():
+            # Si no existe, lo creamos
+            print(f"   + Creando usuario: {uname}")
+            # Hashing
+            bytes_pass = upass.encode('utf-8')
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(bytes_pass, salt)
+            
+            cursor.execute("""
+                INSERT INTO users (id, user_name, password_hash, role_id)
+                VALUES (?, ?, ?, ?)
+            """, (uid, uname, hashed, urole))
+        else:
+            print(f"   . Usuario {uname} ya existe.")
+            
+    conn.commit()
+
 def init_db():
-    """
-    Busca el archivo schema.sql y ejecuta los comandos para crear las tablas.
-    Esta es la función que tu main.py está buscando.
-    """
     if not os.path.exists(SCHEMA_PATH):
-        print(f"[ERROR CRÍTICO] No se encontró el esquema en: {SCHEMA_PATH}")
-        print("Verifica que hayas creado el archivo src/database/schema.sql")
+        print(f"[ERROR] No existe el esquema en {SCHEMA_PATH}")
         return
 
     conn = get_connection()
     try:
+        # 1. Migración (Crear tablas)
         with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
-            sql_script = f.read()
-            conn.executescript(sql_script)
-            print(f"[OK] Base de datos verificada/creada en: {DB_PATH}")
+            conn.executescript(f.read())
             
-            # --- Verificación rápida ---
-            cursor = conn.cursor()
-            cursor.execute("SELECT count(*) FROM roles")
-            count = cursor.fetchone()[0]
-            print(f"[INFO] Roles existentes: {count}")
-            
+        # 2. Seeding (Datos iniciales) - LA MEJORA ESTÁ AQUÍ
+        seed_data(conn)
+        
+        print(f"[OK] Base de datos lista en: {DB_PATH}")
     except Exception as e:
-        print(f"[ERROR] Fallo al inicializar la BD: {e}")
+        print(f"[ERROR] BD: {e}")
     finally:
         conn.close()
+
+# Permitir ejecutar este archivo solo para reiniciar la BD si se quiere
+if __name__ == "__main__":
+    init_db()
