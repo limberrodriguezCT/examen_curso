@@ -5,112 +5,113 @@ from src.logic.rental_logic import RentalLogic
 class RentalsWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("Gestión de Rentas")
-        self.geometry("1000x600")
+        self.title("Procesar Rentas")
+        self.geometry("1100x750")
+        self.config(bg="#F4F6F9")
         
-        self.customers_map = {} # Para guardar ID del cliente seleccionado
-        self.vehicles_map = {}  # Para guardar ID del vehículo seleccionado
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+        self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#343a40", foreground="white", relief="flat")
+        self.style.configure("Treeview", font=("Segoe UI", 10), rowheight=35) # Filas más altas para rentas
+
+        self.customers_map = {}
+        self.vehicles_map = {}
         
+        self.create_header()
         self.create_form()
         self.create_table()
         self.load_combos()
         self.load_data()
 
+    def create_header(self):
+        h = tk.Frame(self, bg="#F4F6F9")
+        h.pack(fill="x", padx=20, pady=(20,10))
+        tk.Label(h, text="🔑 Mostrador de Rentas", font=("Segoe UI", 20, "bold"), bg="#F4F6F9", fg="#333").pack(side="left")
+
     def create_form(self):
-        frame = tk.LabelFrame(self, text="Nueva Renta", padx=10, pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
+        card = tk.Frame(self, bg="white", padx=25, pady=25)
+        card.pack(fill="x", padx=20, pady=5)
+        
+        # Título de sección
+        tk.Label(card, text="Nueva Solicitud de Alquiler", font=("Segoe UI", 12, "bold"), bg="white", fg="#007bff").grid(row=0, column=0, columnspan=4, sticky="w", pady=(0, 15))
 
-        # Cliente
-        tk.Label(frame, text="Cliente:").grid(row=0, column=0, sticky="w")
-        self.combo_customers = ttk.Combobox(frame, width=30, state="readonly")
-        self.combo_customers.grid(row=0, column=1, padx=5)
+        # Combos
+        tk.Label(card, text="Seleccionar Cliente:", font=("Segoe UI", 9, "bold"), bg="white").grid(row=1, column=0, sticky="w")
+        self.combo_customers = ttk.Combobox(card, width=35, state="readonly", font=("Segoe UI", 10))
+        self.combo_customers.grid(row=1, column=1, sticky="w", padx=10, ipady=3)
 
-        # Vehículo
-        tk.Label(frame, text="Vehículo Disponible:").grid(row=0, column=2, sticky="w")
-        self.combo_vehicles = ttk.Combobox(frame, width=30, state="readonly")
-        self.combo_vehicles.grid(row=0, column=3, padx=5)
+        tk.Label(card, text="Vehículo Disponible:", font=("Segoe UI", 9, "bold"), bg="white").grid(row=1, column=2, sticky="w")
+        self.combo_vehicles = ttk.Combobox(card, width=35, state="readonly", font=("Segoe UI", 10))
+        self.combo_vehicles.grid(row=1, column=3, sticky="w", padx=10, ipady=3)
 
         # Días
-        tk.Label(frame, text="Días de renta:").grid(row=1, column=0, sticky="w")
-        self.entry_days = tk.Entry(frame, width=10)
-        self.entry_days.grid(row=1, column=1, sticky="w", padx=5)
+        tk.Label(card, text="Días a Rentar:", font=("Segoe UI", 9, "bold"), bg="white").grid(row=2, column=0, sticky="w", pady=20)
+        self.entry_days = tk.Entry(card, width=10, font=("Segoe UI", 12), bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ccc")
+        self.entry_days.grid(row=2, column=1, sticky="w", padx=10, ipady=5)
 
-        # Botón Rentar
-        tk.Button(frame, text="REGISTRAR RENTA", bg="#007bff", fg="white", command=self.save_rental).grid(row=1, column=3, pady=10, sticky="e")
+        # Botón Grande de Acción
+        tk.Button(card, text="✅ CONFIRMAR Y REGISTRAR", bg="#007bff", fg="white", font=("Segoe UI", 11, "bold"), 
+                  relief="flat", cursor="hand2", padx=20, pady=10, command=self.save_rental).grid(row=2, column=2, columnspan=2, sticky="e")
 
     def create_table(self):
-        # Tabla de Rentas Activas
-        frame = tk.LabelFrame(self, text="Rentas Activas (Vehículos en calle)")
-        frame.pack(fill="both", expand=True, padx=10, pady=5)
+        # Contenedor tabla
+        frame = tk.Frame(self, bg="white")
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
         
+        # Barra superior de la tabla
+        top_bar = tk.Frame(frame, bg="white")
+        top_bar.pack(fill="x", pady=(0, 10))
+        tk.Label(top_bar, text="Vehículos actualmente en calle (Activos)", font=("Segoe UI", 11, "bold"), bg="white", fg="#555").pack(side="left")
+        
+        tk.Button(top_bar, text="🔄 FINALIZAR RENTA SELECCIONADA", bg="#dc3545", fg="white", 
+                  font=("Segoe UI", 9, "bold"), relief="flat", cursor="hand2", padx=10, pady=5, 
+                  command=self.end_rental).pack(side="right")
+
+        # Tabla
         cols = ("id", "cliente", "vehiculo", "placa", "fecha", "total", "vid")
         self.tree = ttk.Treeview(frame, columns=cols, show="headings")
         
-        self.tree.heading("id", text="ID")
-        self.tree.heading("cliente", text="Cliente")
-        self.tree.heading("vehiculo", text="Vehículo")
-        self.tree.heading("placa", text="Placa")
-        self.tree.heading("fecha", text="Fecha Salida")
-        self.tree.heading("total", text="Total ($)")
+        headers = ["ID", "Cliente", "Vehículo", "Placa", "Fecha Salida", "Total ($)"]
+        widths = [50, 200, 150, 100, 150, 100]
         
-        self.tree.column("id", width=30)
-        self.tree.column("vid", width=0, stretch=False) # Ocultar ID vehiculo
+        for c, h, w in zip(cols[:-1], headers, widths):
+            self.tree.heading(c, text=h)
+            self.tree.column(c, width=w)
         
+        self.tree.column("vid", width=0, stretch=False) # Oculto
+
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Botón para Finalizar Renta
-        btn_frame = tk.Frame(frame)
-        btn_frame.pack(side=tk.RIGHT, fill=tk.Y)
-        tk.Button(btn_frame, text="FINALIZAR\nRENTA\n(Devolución)", bg="#dc3545", fg="white", command=self.end_rental).pack(pady=20, padx=5)
-
     def load_combos(self):
-        # Cargar Clientes
         customers = RentalLogic.get_customers()
-        c_values = []
-        self.customers_map = {}
-        for c in customers:
-            display = f"{c['full_name']} ({c['document_number']})"
-            c_values.append(display)
-            self.customers_map[display] = c['id']
-        self.combo_customers['values'] = c_values
+        self.customers_map = {f"{c['full_name']}": c['id'] for c in customers}
+        self.combo_customers['values'] = list(self.customers_map.keys())
 
-        # Cargar Vehículos Disponibles
         vehicles = RentalLogic.get_available_vehicles()
-        v_values = []
-        self.vehicles_map = {}
-        for v in vehicles:
-            display = f"{v['model']} - {v['plate_number']} (${v['daily_rate']}/día)"
-            v_values.append(display)
-            self.vehicles_map[display] = v['id']
-        self.combo_vehicles['values'] = v_values
+        self.vehicles_map = {f"{v['model']} - {v['plate_number']} (${v['daily_rate']})": v['id'] for v in vehicles}
+        self.combo_vehicles['values'] = list(self.vehicles_map.keys())
 
     def load_data(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
         rows = RentalLogic.read_all_active()
         for r in rows:
-            self.tree.insert("", tk.END, values=(r['id'], r['full_name'], r['model'], r['plate_number'], r['rental_date'], r['total_amount'], r['vehicle_id']))
+            self.tree.insert("", tk.END, values=(r['id'], r['full_name'], r['model'], r['plate_number'], r['rental_date'], f"${r['total_amount']}", r['vehicle_id']))
 
     def save_rental(self):
-        c_text = self.combo_customers.get()
-        v_text = self.combo_vehicles.get()
+        c_txt = self.combo_customers.get()
+        v_txt = self.combo_vehicles.get()
         days = self.entry_days.get()
-
-        if not c_text or not v_text or not days:
-            messagebox.showwarning("Error", "Todos los campos son obligatorios")
-            return
         
-        if not days.isdigit():
-            messagebox.showerror("Error", "Los días deben ser un número entero")
-            return
-
-        c_id = self.customers_map[c_text]
-        v_id = self.vehicles_map[v_text]
-
+        if not c_txt or not v_txt or not days: return
+        
+        c_id = self.customers_map[c_txt]
+        v_id = self.vehicles_map[v_txt]
+        
         ok, msg = RentalLogic.create_rental(c_id, v_id, days)
         if ok:
-            messagebox.showinfo("Éxito", msg)
-            self.load_combos() # Recargar combos (el carro ya no debe salir)
+            messagebox.showinfo("Renta Procesada", msg)
+            self.load_combos()
             self.load_data()
             self.entry_days.delete(0, tk.END)
             self.combo_vehicles.set('')
@@ -120,18 +121,11 @@ class RentalsWindow(tk.Toplevel):
     def end_rental(self):
         sel = self.tree.selection()
         if not sel:
-            messagebox.showwarning("Atención", "Seleccione una renta activa para finalizarla")
+            messagebox.showwarning("Alerta", "Seleccione una renta de la lista para finalizarla.")
             return
         
         item = self.tree.item(sel[0])
-        rental_id = item['values'][0]
-        vehicle_id = item['values'][6] # Columna oculta
-        
-        if messagebox.askyesno("Confirmar", "¿El vehículo ha sido devuelto?"):
-            ok, msg = RentalLogic.finalize_rental(rental_id, vehicle_id)
-            if ok:
-                messagebox.showinfo("Éxito", msg)
-                self.load_data()
-                self.load_combos() # El vehículo vuelve a estar disponible
-            else:
-                messagebox.showerror("Error", msg)
+        if messagebox.askyesno("Devolución", f"¿Confirmar devolución del vehículo {item['values'][3]}?"):
+            RentalLogic.finalize_rental(item['values'][0], item['values'][6])
+            self.load_data()
+            self.load_combos()
