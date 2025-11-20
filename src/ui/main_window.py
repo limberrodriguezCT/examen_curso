@@ -1,7 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog # <-- Agregado simpledialog para pedir fechas
+from tkinter import messagebox, simpledialog
 from src.ui.customers_window import CustomersWindow
-from src.logic.reports import ReportService # <-- Importamos la lógica de reportes
+from src.ui.vehicles_window import VehiclesWindow  # <--- ESTA ERA LA QUE FALTABA
+from src.logic.reports import ReportService
 
 class MainWindow(tk.Toplevel):
     def __init__(self, parent, user_data):
@@ -9,7 +10,6 @@ class MainWindow(tk.Toplevel):
         self.user_data = user_data
         self.role = user_data['role_name']
         
-        # Configuración de la ventana
         self.title(f"AutoPy System - Usuario: {self.user_data['user_name']}")
         self.geometry("1024x768")
         self.state('zoomed') 
@@ -39,19 +39,16 @@ class MainWindow(tk.Toplevel):
         crud_menu.add_command(label="Vehículos", command=lambda: self.open_crud("Vehículos"))
         crud_menu.add_command(label="Rentas", command=lambda: self.open_crud("Rentas"))
 
-        # --- MENU REPORTES (NUEVO) ---
+        # --- MENU REPORTES ---
         report_menu = tk.Menu(menu_bar, tearoff=0)
         menu_bar.add_cascade(label="Reportes", menu=report_menu)
         
-        # 1. Reporte Sencillo
         report_menu.add_command(label="Inventario Vehículos (Sencillo)", 
                                 command=ReportService.export_simple_vehicles)
         
-        # 2. Reporte Maestro Detalle
         report_menu.add_command(label="Clientes y Rentas (Maestro-Detalle)", 
                                 command=ReportService.export_master_detail)
         
-        # 3. Reporte Parametrizado (Pide fechas primero)
         report_menu.add_command(label="Rentas por Fecha (Parametrizado)", 
                                 command=self.ask_date_report)
         
@@ -68,20 +65,19 @@ class MainWindow(tk.Toplevel):
         tk.Label(frame, text=f"Panel de Control - Rol: {self.role}", font=("Arial", 14), bg="#f0f0f0").pack(pady=10)
 
     def open_crud(self, module_name):
+        # Aquí estaba el error visual. Al pegar esto completo se arregla la indentación.
         if module_name == "Clientes":
             CustomersWindow(self)
-        else:
-            messagebox.showinfo("En construcción", f"El módulo de {module_name} aún no está listo.")
+        elif module_name == "Vehículos":
+            VehiclesWindow(self)
+        elif module_name == "Rentas":
+            messagebox.showinfo("En construcción", "El módulo de Rentas está en desarrollo.")
 
     def ask_date_report(self):
-        """
-        Función auxiliar para pedir las fechas antes de llamar al reporte parametrizado.
-        """
         start_date = simpledialog.askstring("Reporte", "Fecha Inicio (YYYY-MM-DD):", parent=self)
         if not start_date: return
         
         end_date = simpledialog.askstring("Reporte", "Fecha Fin (YYYY-MM-DD):", parent=self)
         if not end_date: return
         
-        # Llamamos a la lógica con los parámetros obtenidos
         ReportService.export_parameterized(start_date, end_date)
