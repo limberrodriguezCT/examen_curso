@@ -22,8 +22,7 @@ class MaintenanceLogic:
     def read_all():
         conn = get_connection()
         cursor = conn.cursor()
-        # CONSULTA ROBUSTA: Usa LEFT JOIN y COALESCE
-        # Si se borró el vehículo, mostrará "Vehículo Eliminado" en vez de ocultar el registro
+        # CONSULTA ROBUSTA:  LEFT JOIN y COALESCE: Si se borró el vehículo, mostrará "Vehículo Eliminado" en vez de ocultar el registro
         query = """
             SELECT 
                 m.id, 

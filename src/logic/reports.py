@@ -19,7 +19,7 @@ class ReportService:
                 CASE WHEN is_available = 1 THEN 'Disponible' ELSE 'Rentado' END as Estado
                 FROM vehicles
             """
-            # 2. Pandas lee SQL y lo convierte en DataFrame
+            # 2. Pandas lee el SQL y lo convierte en DataFrame
             df = pd.read_sql_query(query, conn)
             
             if df.empty:
@@ -80,7 +80,7 @@ class ReportService:
             )
             
             if file_path:
-                # Use ExcelWriter para crear múltiples hojas
+                # Se utilizo ExcelWriter para crear múltiples hojas
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                     df_master.to_excel(writer, sheet_name="Maestro Clientes", index=False)
                     df_detail.to_excel(writer, sheet_name="Detalle Rentas", index=False)

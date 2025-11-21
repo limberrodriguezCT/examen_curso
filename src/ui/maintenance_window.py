@@ -63,10 +63,10 @@ class MaintenanceWindow(tk.Toplevel):
         btn_frame = tk.Frame(card, bg="white")
         btn_frame.pack(fill="x", pady=5)
 
-        self.create_btn(btn_frame, "GUARDAR", "#28a745", self.save)
-        self.create_btn(btn_frame, "ACTUALIZAR", "#17a2b8", self.update)
-        self.create_btn(btn_frame, "ELIMINAR", "#dc3545", self.delete)
-        self.create_btn(btn_frame, "LIMPIAR", "#6c757d", self.clear)
+        self.create_btn(btn_frame, "Guardar", "#28a745", self.save)
+        self.create_btn(btn_frame, "Actualizar", "#17a2b8", self.update)
+        self.create_btn(btn_frame, "Eliminar", "#dc3545", self.delete)
+        self.create_btn(btn_frame, "Limpiar", "#6c757d", self.clear)
 
     def create_btn(self, parent, text, color, cmd):
         tk.Button(parent, text=text, bg=color, fg="white", font=("Segoe UI", 9, "bold"), 

@@ -10,17 +10,17 @@ class PaymentWindow(tk.Toplevel):
         self.geometry("1000x700")
         self.config(bg="#F4F6F9")
         
-        # --- ESTILOS VISUALES ---
+     
         self.style = ttk.Style()
         self.style.theme_use("clam")
-        # Forzamos colores de alto contraste
+      
         self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#343a40", foreground="white", relief="flat")
         self.style.configure("Treeview", font=("Segoe UI", 10), rowheight=30, background="white", foreground="black", fieldbackground="white")
         self.style.map("Treeview", background=[('selected', '#007bff')], foreground=[('selected', 'white')])
 
         self.rentals_map = {}
         
-        # Construcción de interfaz vertical (Pack es más seguro que Grid aquí)
+        # Construcción de interfaz vertical
         self.create_header()
         self.create_form_area()
         self.create_table_area()
@@ -38,13 +38,13 @@ class PaymentWindow(tk.Toplevel):
         tk.Label(h, text="💰 Registro de Pagos", font=("Segoe UI", 22, "bold"), bg="#F4F6F9", fg="#333").pack(side="left")
 
     def create_form_area(self):
-        # Tarjeta Blanca
+        
         card = tk.Frame(self, bg="white", padx=20, pady=20)
         card.pack(fill="x", padx=20, pady=5)
 
         self.var_id = tk.StringVar() # ID oculto para editar
 
-        # --- SECCIÓN DE INPUTS ---
+       
         inputs_frame = tk.Frame(card, bg="white")
         inputs_frame.pack(fill="x", pady=(0, 15))
 
@@ -58,15 +58,14 @@ class PaymentWindow(tk.Toplevel):
         self.entry_amount = tk.Entry(inputs_frame, width=20, font=("Segoe UI", 11), bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ccc")
         self.entry_amount.pack(anchor="w", pady=(5, 5), ipady=3)
 
-        # --- SECCIÓN DE BOTONES (CRUD) ---
         btn_frame = tk.Frame(card, bg="white")
         btn_frame.pack(fill="x", pady=10)
 
         # Botones grandes y claros
-        self.create_btn(btn_frame, "✅ REGISTRAR PAGO", "#28a745", self.save)
-        self.create_btn(btn_frame, "🔄 ACTUALIZAR", "#17a2b8", self.update)
-        self.create_btn(btn_frame, "🗑 ELIMINAR", "#dc3545", self.delete)
-        self.create_btn(btn_frame, "🧹 LIMPIAR", "#6c757d", self.clear)
+        self.create_btn(btn_frame, " Regristar Pago", "#28a745", self.save)
+        self.create_btn(btn_frame, "Actualizar", "#17a2b8", self.update)
+        self.create_btn(btn_frame, "Eliminar", "#dc3545", self.delete)
+        self.create_btn(btn_frame, "Limpiar", "#6c757d", self.clear)
 
     def create_btn(self, parent, text, color, cmd):
         tk.Button(parent, text=text, bg=color, fg="white", font=("Segoe UI", 9, "bold"), 
@@ -78,7 +77,7 @@ class PaymentWindow(tk.Toplevel):
         
         tk.Label(frame, text="Historial de Pagos Recibidos", font=("Segoe UI", 11, "bold"), bg="white", fg="#555").pack(anchor="w", pady=(0, 10))
 
-        # Tabla
+        
         cols = ("id", "fecha", "monto", "moneda", "cliente", "placa", "rid")
         self.tree = ttk.Treeview(frame, columns=cols, show="headings")
         
@@ -106,7 +105,7 @@ class PaymentWindow(tk.Toplevel):
         self.combo_rent['values'] = []
         values = []
         for r in rows:
-            # r[0]=rental_id, r[1]=cliente, r[3]=placa (Según índices del SQL)
+            # r[0]=rental_id, r[1]=cliente, r[3]=placa
             display = f"Renta #{r[0]} - {r[1]} ({r[3]})"
             values.append(display)
             self.rentals_map[display] = r[0]
@@ -120,7 +119,7 @@ class PaymentWindow(tk.Toplevel):
         print(f"[DEBUG UI] Cargando {len(rows)} filas en la tabla de pagos.")
         
         for r in rows:
-            # Usamos índices numéricos r[0], r[1] para máxima seguridad
+            # Indices numéricos r[0], r[1] para máxima seguridad
             self.tree.insert("", "end", values=(
                 r[0], # ID
                 r[1], # Fecha
@@ -142,7 +141,7 @@ class PaymentWindow(tk.Toplevel):
             amt = str(vals[2]).replace("$", "")
             self.entry_amount.delete(0, tk.END)
             self.entry_amount.insert(0, amt)
-            # Nota: No seleccionamos el combo automáticamente porque la renta podría no estar activa ya
+            # Nota: No se s4leccionan el combo automáticamente porque la renta podría no estar activa ya
 
     def save(self):
         r_txt = self.combo_rent.get()

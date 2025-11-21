@@ -37,7 +37,7 @@ class RentalLogic:
             rate = row['daily_rate']
             total = rate * float(days)
 
-            # 2. Insertar Renta (Forzamos int() para asegurar IDs numéricos)
+            # 2. Insertar Renta (se forzo int() para asegurar IDs numéricos)
             cursor.execute("""
                 INSERT INTO rentals (customer_id, vehicle_id, total_amount, status)
                 VALUES (?, ?, ?, 'Active')
@@ -60,7 +60,7 @@ class RentalLogic:
         conn = get_connection()
         cursor = conn.cursor()
         
-        # USAMOS LEFT JOIN Y COALESCE PARA QUE NO FALLE SI BORRASTE UN CLIENTE
+        # SE USO LEFT JOIN Y COALESCE PARA QUE NO FALLE SI SE BORRA UN CLIENTE
         query = """
             SELECT 
                 r.id AS rental_id, 

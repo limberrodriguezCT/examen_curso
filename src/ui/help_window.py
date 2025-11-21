@@ -44,7 +44,6 @@ class HelpWindow(tk.Toplevel):
         notebook = ttk.Notebook(container)
         notebook.pack(fill="both", expand=True)
 
-        # Pestañas (Sin emojis en los títulos para evitar errores)
         tab1 = tk.Frame(notebook, bg="white")
         notebook.add(tab1, text="  Inicio  ")
         self.build_home_tab(tab1)
@@ -72,7 +71,6 @@ class HelpWindow(tk.Toplevel):
         info_frame = tk.Frame(parent, bg="#f8f9fa", padx=20, pady=20)
         info_frame.pack(pady=30, fill="x", padx=40)
         
-        # Reemplazado el emoji de foco por texto
         tk.Label(info_frame, text="CONSEJOS RÁPIDOS:", font=("Segoe UI", 10, "bold"), bg="#f8f9fa").pack(anchor="w")
         tips = [
             "• Use el menú superior para navegar entre módulos.",
@@ -100,7 +98,6 @@ class HelpWindow(tk.Toplevel):
     def build_rentas_tab(self, parent):
         tk.Label(parent, text="Flujo de Renta", font=("Segoe UI", 14, "bold"), bg="white", fg="#333").pack(pady=20)
         
-        # Reemplazados los emojis de números por texto simple
         steps = [
             "1. Ir a Gestión > Rentas en el menú principal.",
             "2. Seleccionar un Cliente existente del menú desplegable.",

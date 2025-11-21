@@ -3,7 +3,6 @@ from tkinter import messagebox, simpledialog, ttk
 from PIL import Image, ImageTk
 import os
 
-# Importaciones
 from src.ui.customers_window import CustomersWindow
 from src.ui.vehicles_window import VehiclesWindow
 from src.ui.rentals_window import RentalsWindow
@@ -19,7 +18,6 @@ class MainWindow(tk.Toplevel):
         self.user_data = user_data
         self.role = user_data['role_name']
         
-        # --- PALETA DE COLORES ---
         self.color_header = "#1a1a1a"   
         self.color_bg = "#F4F6F9"       
         self.color_card = "#FFFFFF"     
@@ -46,7 +44,6 @@ class MainWindow(tk.Toplevel):
         header.pack(side="top", fill="x")
         header.pack_propagate(False)
 
-        # Logo
         left_frame = tk.Frame(header, bg=self.color_header)
         left_frame.pack(side="left", padx=20)
         try:
@@ -60,7 +57,6 @@ class MainWindow(tk.Toplevel):
             pass
         tk.Label(left_frame, text="AUTOPY", font=("Segoe UI", 16, "bold"), bg=self.color_header, fg="#FFFFFF").pack(side="left")
 
-        # Nav
         nav_frame = tk.Frame(header, bg=self.color_header)
         nav_frame.pack(side="left", padx=50)
         self.create_nav_btn(nav_frame, "VEHÍCULOS", lambda: self.open_crud("Vehículos"))
@@ -68,7 +64,6 @@ class MainWindow(tk.Toplevel):
         self.create_nav_btn(nav_frame, "RENTAS", lambda: self.open_crud("Rentas"))
         self.create_nav_btn(nav_frame, "REPORTES", self.show_reports_menu)
 
-        # User
         right_frame = tk.Frame(header, bg=self.color_header)
         right_frame.pack(side="right", padx=20)
         if self.role == "Administrador": self.create_icon_btn(right_frame, "⚙️", self.show_admin_menu)
@@ -87,8 +82,7 @@ class MainWindow(tk.Toplevel):
         scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = tk.Frame(self.canvas, bg=self.color_bg)
 
-        # --- AQUÍ ESTÁ LA MAGIA DEL LÍMITE ---
-        # Le decimos al frame interno: "Cuando cambies de tamaño, avísale al canvas cuál es tu nuevo tamaño"
+        
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(
@@ -104,8 +98,8 @@ class MainWindow(tk.Toplevel):
         scrollbar.pack(side="right", fill="y")
         
         # Eventos
-        self.canvas.bind('<Configure>', self.on_canvas_configure) # Estirar a lo ancho
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel) # Rueda del ratón
+        self.canvas.bind('<Configure>', self.on_canvas_configure) 
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel) 
 
         # Llenar contenido
         self.fill_dashboard_content(self.scrollable_frame)
@@ -127,7 +121,7 @@ class MainWindow(tk.Toplevel):
         grid_frame = tk.Frame(content_box, bg=self.color_bg)
         grid_frame.pack(fill="x")
 
-        # Tarjetas (Grid de 3 columnas)
+        # Tarjetas 
         self.create_card(grid_frame, 0, 0, "🚗", "Vehículos", "Gestionar flota", "#20c997", lambda: self.open_crud("Vehículos"))
         self.create_card(grid_frame, 0, 1, "👥", "Clientes", "Base de datos", "#17a2b8", lambda: self.open_crud("Clientes"))
         self.create_card(grid_frame, 0, 2, "🔑", "Nueva Renta", "Procesar alquiler", "#007bff", lambda: self.open_crud("Rentas"))

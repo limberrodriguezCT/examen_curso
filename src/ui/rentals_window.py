@@ -9,7 +9,6 @@ class RentalsWindow(tk.Toplevel):
         self.geometry("1100x750")
         self.config(bg="#F4F6F9")
         
-        # --- ESTILOS VISUALES ---
         self.style = ttk.Style()
         self.style.theme_use("clam")
         
@@ -49,7 +48,7 @@ class RentalsWindow(tk.Toplevel):
     def create_header(self):
         h = tk.Frame(self, bg="#F4F6F9")
         h.pack(fill="x", padx=20, pady=(20,10))
-        tk.Label(h, text="🔑 Mostrador de Rentas", font=("Segoe UI", 20, "bold"), bg="#F4F6F9", fg="#333").pack(side="left")
+        tk.Label(h, text=" Mostrador de Rentas", font=("Segoe UI", 20, "bold"), bg="#F4F6F9", fg="#333").pack(side="left")
 
     def create_form(self):
         card = tk.Frame(self, bg="white", padx=25, pady=25)
@@ -69,7 +68,7 @@ class RentalsWindow(tk.Toplevel):
         self.entry_days = tk.Entry(card, width=10, font=("Segoe UI", 12), bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ccc", fg="black")
         self.entry_days.grid(row=2, column=1, sticky="w", padx=10, ipady=5)
 
-        tk.Button(card, text="✅ CONFIRMAR Y REGISTRAR", bg="#007bff", fg="white", font=("Segoe UI", 11, "bold"), 
+        tk.Button(card, text="Confirmar y Registrar", bg="#007bff", fg="white", font=("Segoe UI", 11, "bold"), 
                   relief="flat", cursor="hand2", padx=20, pady=10, command=self.save_rental).grid(row=2, column=2, columnspan=2, sticky="e")
 
     def create_table(self):
@@ -80,7 +79,7 @@ class RentalsWindow(tk.Toplevel):
         top_bar.pack(fill="x", pady=(0, 10))
         tk.Label(top_bar, text="Vehículos actualmente en calle (Activos)", font=("Segoe UI", 11, "bold"), bg="white", fg="#555").pack(side="left")
         
-        tk.Button(top_bar, text="🔄 FINALIZAR RENTA SELECCIONADA", bg="#dc3545", fg="white", 
+        tk.Button(top_bar, text="FINALIZAR RENTA SELECCIONADA", bg="#dc3545", fg="white", 
                   font=("Segoe UI", 9, "bold"), relief="flat", cursor="hand2", padx=10, pady=5, 
                   command=self.end_rental).pack(side="right")
 
