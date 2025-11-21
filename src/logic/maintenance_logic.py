@@ -12,9 +12,9 @@ class MaintenanceLogic:
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
             """, (vehicle_id, description, cost))
             conn.commit()
-            return True, "Mantenimiento registrado."
+            return True, "Mantenimiento registrado correctamente."
         except Exception as e:
-            return False, str(e)
+            return False, f"Error BD: {e}"
         finally:
             conn.close()
 
@@ -22,28 +22,38 @@ class MaintenanceLogic:
     def read_all():
         conn = get_connection()
         cursor = conn.cursor()
-        # Usamos LEFT JOIN por seguridad visual
+        # CONSULTA ROBUSTA: Usa LEFT JOIN y COALESCE
+        # Si se borró el vehículo, mostrará "Vehículo Eliminado" en vez de ocultar el registro
         query = """
-            SELECT m.id, v.plate_number, v.model, m.description, m.cost, m.log_date, m.vehicle_id
+            SELECT 
+                m.id, 
+                COALESCE(v.plate_number, '---') as placa, 
+                COALESCE(v.model, 'Vehículo Eliminado') as modelo, 
+                m.description, 
+                m.cost, 
+                m.log_date, 
+                m.vehicle_id
             FROM maintenance_logs m
             LEFT JOIN vehicles v ON m.vehicle_id = v.id
             ORDER BY m.log_date DESC
         """
-        data = cursor.fetchall()
-        conn.close()
-        return data
+        try:
+            cursor.execute(query)
+            data = cursor.fetchall()
+            print(f"[DEBUG MANTENIMIENTO] Se encontraron {len(data)} registros.")
+            return data
+        except Exception as e:
+            print(f"[ERROR] Fallo consulta mantenimiento: {e}")
+            return []
+        finally:
+            conn.close()
 
-    # --- NUEVAS FUNCIONES PARA COMPLETAR EL CRUD ---
     @staticmethod
     def update(log_id, description, cost):
         conn = get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE maintenance_logs 
-                SET description=?, cost=?
-                WHERE id=?
-            """, (description, cost, log_id))
+            cursor.execute("UPDATE maintenance_logs SET description=?, cost=? WHERE id=?", (description, cost, log_id))
             conn.commit()
             return True, "Registro actualizado."
         except Exception as e:
