@@ -44,6 +44,25 @@ CREATE TABLE IF NOT EXISTS rentals (
     FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
 );
 
+CREATE TABLE IF NOT EXISTS payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payment_date TEXT DEFAULT CURRENT_TIMESTAMP,
+    amount REAL NOT NULL,
+    currency TEXT DEFAULT 'USD',
+    rental_id INTEGER NOT NULL,
+    FOREIGN KEY (rental_id) REFERENCES rentals(id)
+);
+
+-- Tabla de Mantenimiento (La que te está dando error)
+CREATE TABLE IF NOT EXISTS maintenance_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_date TEXT DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    cost REAL,
+    vehicle_id INTEGER NOT NULL,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
 -- Insertar roles obligatorios
 INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'Administrador');
 INSERT OR IGNORE INTO roles (id, name) VALUES (2, 'Agente');
