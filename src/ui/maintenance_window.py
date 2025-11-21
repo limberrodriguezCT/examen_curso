@@ -1,28 +1,34 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from src.logic.maintenance_logic import MaintenanceLogic
-from src.logic.vehicle_logic import VehicleLogic # Para listar vehículos
+from src.logic.vehicle_logic import VehicleLogic 
 
 class MaintenanceWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Bitácora de Mantenimiento")
-        self.geometry("900x600")
+        self.geometry("1000x650")
         self.config(bg="#F4F6F9")
         
-        # Estilos
+        # --- CORRECCIÓN DE ESTILOS (VISIBLE) ---
         self.style = ttk.Style()
         self.style.theme_use("clam")
         self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#343a40", foreground="white", relief="flat")
-        self.style.configure("Treeview", font=("Segoe UI", 10), rowheight=30)
+        self.style.configure("Treeview", font=("Segoe UI", 10), rowheight=30, background="white", foreground="black")
+        self.style.map("Treeview", background=[('selected', '#007bff')], foreground=[('selected', 'white')])
 
         self.vehicles_map = {}
+        self.reverse_veh_map = {} # Para cargar el combo al seleccionar
         
         self.create_header()
         self.create_form()
         self.create_table()
-        self.load_vehicles()
-        self.load_data()
+        
+        try:
+            self.load_vehicles()
+            self.load_data()
+        except Exception as e:
+            print(f"Error cargando datos: {e}")
 
     def create_header(self):
         h = tk.Frame(self, bg="#F4F6F9")
@@ -33,63 +39,142 @@ class MaintenanceWindow(tk.Toplevel):
         card = tk.Frame(self, bg="white", padx=20, pady=20)
         card.pack(fill="x", padx=20, pady=5)
 
+        self.var_id = tk.StringVar() # ID oculto para editar
+
+        # Fila 1
         tk.Label(card, text="Vehículo:", font=("Segoe UI", 9, "bold"), bg="white").grid(row=0, column=0, sticky="w")
-        self.combo_veh = ttk.Combobox(card, state="readonly", width=30)
+        self.combo_veh = ttk.Combobox(card, state="readonly", width=35)
         self.combo_veh.grid(row=0, column=1, padx=10, pady=5)
 
         tk.Label(card, text="Costo ($):", font=("Segoe UI", 9, "bold"), bg="white").grid(row=0, column=2, sticky="w")
-        self.entry_cost = tk.Entry(card, width=15, bg="#f8f9fa", relief="flat", highlightthickness=1)
+        self.entry_cost = tk.Entry(card, width=15, bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ddd")
         self.entry_cost.grid(row=0, column=3, padx=10, ipady=3)
 
+        # Fila 2
         tk.Label(card, text="Descripción:", font=("Segoe UI", 9, "bold"), bg="white").grid(row=1, column=0, sticky="nw", pady=10)
-        self.entry_desc = tk.Entry(card, width=60, bg="#f8f9fa", relief="flat", highlightthickness=1)
+        self.entry_desc = tk.Entry(card, width=60, bg="#f8f9fa", relief="flat", highlightthickness=1, highlightbackground="#ddd")
         self.entry_desc.grid(row=1, column=1, columnspan=3, sticky="w", padx=10, ipady=3)
 
-        tk.Button(card, text="REGISTRAR", bg="#28a745", fg="white", font=("Segoe UI", 9, "bold"), 
-                  relief="flat", cursor="hand2", command=self.save).grid(row=2, column=3, sticky="e", pady=10)
+        # Botones CRUD
+        btn_frame = tk.Frame(card, bg="white")
+        btn_frame.grid(row=2, column=0, columnspan=4, sticky="e", pady=10)
+
+        self.create_btn(btn_frame, "GUARDAR", "#28a745", self.save)
+        self.create_btn(btn_frame, "ACTUALIZAR", "#17a2b8", self.update)
+        self.create_btn(btn_frame, "ELIMINAR", "#dc3545", self.delete)
+        self.create_btn(btn_frame, "LIMPIAR", "#6c757d", self.clear)
+
+    def create_btn(self, parent, text, color, cmd):
+        tk.Button(parent, text=text, bg=color, fg="white", font=("Segoe UI", 9, "bold"), 
+                  relief="flat", cursor="hand2", padx=15, pady=5, command=cmd).pack(side="left", padx=5)
 
     def create_table(self):
         frame = tk.Frame(self, bg="white")
         frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        cols = ("id", "placa", "modelo", "desc", "costo", "fecha")
+        cols = ("id", "placa", "modelo", "desc", "costo", "fecha", "vid")
         self.tree = ttk.Treeview(frame, columns=cols, show="headings")
         
         headers = ["ID", "Placa", "Modelo", "Descripción del Trabajo", "Costo", "Fecha"]
-        widths = [40, 80, 150, 300, 80, 120]
+        widths = [40, 100, 150, 300, 80, 120]
         
-        for c, h, w in zip(cols, headers, widths):
+        for c, h, w in zip(cols[:-1], headers, widths):
             self.tree.heading(c, text=h)
             self.tree.column(c, width=w)
             
+        self.tree.column("vid", width=0, stretch=False) # Oculto
+
         self.tree.pack(side="left", fill="both", expand=True)
-        sc = ttk.Scrollbar(frame, command=self.tree.yview); self.tree.configure(yscroll=sc.set); sc.pack(side="right", fill="y")
+        
+        sc = ttk.Scrollbar(frame, command=self.tree.yview)
+        self.tree.configure(yscroll=sc.set)
+        sc.pack(side="right", fill="y")
+
+        self.tree.bind("<<TreeviewSelect>>", self.select_item)
 
     def load_vehicles(self):
-        # Usamos la logica de vehiculos existente
         rows = VehicleLogic.read_all()
-        self.vehicles_map = {f"{r['plate_number']} - {r['model']}": r['id'] for r in rows}
-        self.combo_veh['values'] = list(self.vehicles_map.keys())
+        self.vehicles_map = {}
+        self.reverse_veh_map = {}
+        values = []
+        for r in rows:
+            display = f"{r['plate_number']} - {r['model']}"
+            values.append(display)
+            self.vehicles_map[display] = r['id']
+            self.reverse_veh_map[r['id']] = display
+        self.combo_veh['values'] = values
 
     def load_data(self):
         for item in self.tree.get_children(): self.tree.delete(item)
         rows = MaintenanceLogic.read_all()
         for r in rows:
-            self.tree.insert("", "end", values=(r['id'], r['plate_number'], r['model'], r['description'], f"${r['cost']}", r['log_date']))
+            self.tree.insert("", "end", values=(
+                r['id'], r['plate_number'], r['model'], 
+                r['description'], f"${r['cost']}", r['log_date'], r['vehicle_id']
+            ))
+
+    def select_item(self, event):
+        sel = self.tree.selection()
+        if sel:
+            item = self.tree.item(sel[0])
+            vals = item['values']
+            self.var_id.set(vals[0])
+            
+            # Recuperar vehículo en el combo
+            vid = vals[6]
+            if vid in self.reverse_veh_map:
+                self.combo_veh.set(self.reverse_veh_map[vid])
+            
+            self.entry_desc.delete(0, tk.END)
+            self.entry_desc.insert(0, vals[3])
+            
+            cost_clean = str(vals[4]).replace("$", "")
+            self.entry_cost.delete(0, tk.END)
+            self.entry_cost.insert(0, cost_clean)
 
     def save(self):
         v_txt = self.combo_veh.get()
         desc = self.entry_desc.get()
         cost = self.entry_cost.get()
         
-        if not v_txt or not desc or not cost: return
+        if not v_txt or not desc or not cost: 
+            messagebox.showwarning("Atención", "Llene todos los campos")
+            return
         
         v_id = self.vehicles_map[v_txt]
         ok, msg = MaintenanceLogic.create_log(v_id, desc, cost)
         if ok:
             messagebox.showinfo("Listo", msg)
             self.load_data()
-            self.entry_desc.delete(0, "end")
-            self.entry_cost.delete(0, "end")
+            self.clear()
         else:
             messagebox.showerror("Error", msg)
+
+    def update(self):
+        if not self.var_id.get(): 
+            messagebox.showwarning("Atención", "Seleccione un registro para editar")
+            return
+        
+        ok, msg = MaintenanceLogic.update(self.var_id.get(), self.entry_desc.get(), self.entry_cost.get())
+        if ok:
+            messagebox.showinfo("Actualizado", msg)
+            self.load_data()
+            self.clear()
+        else:
+            messagebox.showerror("Error", msg)
+
+    def delete(self):
+        if not self.var_id.get(): return
+        if messagebox.askyesno("Confirmar", "¿Borrar este registro de mantenimiento?"):
+            ok, msg = MaintenanceLogic.delete(self.var_id.get())
+            if ok:
+                self.load_data()
+                self.clear()
+            else:
+                messagebox.showerror("Error", msg)
+
+    def clear(self):
+        self.var_id.set("")
+        self.combo_veh.set("")
+        self.entry_desc.delete(0, tk.END)
+        self.entry_cost.delete(0, tk.END)
