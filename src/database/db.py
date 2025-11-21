@@ -1,6 +1,6 @@
 import sqlite3
 import os
-import bcrypt # Necesitamos bcrypt aquí para crear las claves
+import bcrypt # Se necesita bcrypt para encriptar las contraseñas
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, 'data', 'autopy.sqlite3')
@@ -15,12 +15,12 @@ def get_connection():
 
 def seed_data(conn):
     """
-    Esta función es tu 'DatabaseSeeder'. Crea los datos por defecto.
+    Esta función es un DatabaseSeeder. Crea los datos por defecto.
     """
     print("--- Ejecutando Semillas (Seeds) ---")
     cursor = conn.cursor()
     
-    # 1. Roles (Ya estaban en el schema, pero aseguramos)
+    # 1. Roles por Defecto
     cursor.execute("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'Administrador')")
     cursor.execute("INSERT OR IGNORE INTO roles (id, name) VALUES (2, 'Agente')")
     
@@ -31,12 +31,13 @@ def seed_data(conn):
     ]
     
     for uid, uname, upass, urole in users_to_create:
-        # Verificamos si existe
+        # Se Verifica si existe
         cursor.execute("SELECT id FROM users WHERE user_name = ?", (uname,))
         if not cursor.fetchone():
-            # Si no existe, lo creamos
+           
+            # Si no existe, se crea
             print(f"   + Creando usuario: {uname}")
-            # Hashing
+            
             bytes_pass = upass.encode('utf-8')
             salt = bcrypt.gensalt()
             hashed = bcrypt.hashpw(bytes_pass, salt)
@@ -61,7 +62,7 @@ def init_db():
         with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
             conn.executescript(f.read())
             
-        # 2. Seeding (Datos iniciales) - LA MEJORA ESTÁ AQUÍ
+        # 2. Seeding (Datos iniciales)
         seed_data(conn)
         
         print(f"[OK] Base de datos lista en: {DB_PATH}")
