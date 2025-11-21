@@ -12,7 +12,7 @@ class AuthService:
         conn = get_connection()
         try:
             cursor = conn.cursor()
-            # Buscamos al usuario y traemos también el nombre de su ROL
+           
             query = """
                 SELECT u.id, u.user_name, u.password_hash, r.name as role_name 
                 FROM users u
@@ -23,20 +23,19 @@ class AuthService:
             user = cursor.fetchone()
             
             if user:
-                # Obtenemos el hash guardado en la BD
+                
                 stored_hash = user['password_hash']
                 
-                # Aseguramos que esté en bytes (necesario para bcrypt)
+                
                 if isinstance(stored_hash, str):
                     stored_hash = stored_hash.encode('utf-8')
                 
                 input_pass = password.encode('utf-8')
                 
-                # Comparamos la contraseña escrita con el hash
                 if bcrypt.checkpw(input_pass, stored_hash):
-                    return user # ¡Login exitoso!
+                    return user 
             
-            return None # Fallo
+            return None 
             
         except Exception as e:
             print(f"Error en login: {e}")

@@ -14,12 +14,12 @@ def main():
 
     print("--- PASO 2: Creando Ventana Raíz... ---")
     root = tk.Tk()
-    root.withdraw() # Ocultamos la raíz
+    root.withdraw() 
 
     print("--- PASO 3: Abriendo Login... ---")
     login_app = LoginWindow(root)
     
-    # Forzamos que el Login se muestre al frente
+    # Esto es para forzar que el Login se muestre al frente
     login_app.deiconify()
     login_app.lift()
     login_app.focus_force()

@@ -3,7 +3,6 @@ from tkinter import messagebox, simpledialog, ttk
 from PIL import Image, ImageTk
 import os
 
-# Importaciones
 from src.ui.customers_window import CustomersWindow
 from src.ui.vehicles_window import VehiclesWindow
 from src.ui.rentals_window import RentalsWindow
@@ -22,7 +21,7 @@ class MainWindow(tk.Toplevel):
         self.color_bg = "#F4F6F9"
         self.color_card = "#FFFFFF"
         self.color_text = "#333333"
-        self.color_accent = "#D60000"  # Rojo para detalles activos
+        self.color_accent = "#D60000" 
         self.color_btn_hover = "#333333"
         
         self.title(f"AutoPy System - {self.user_data['user_name']}")
@@ -32,7 +31,6 @@ class MainWindow(tk.Toplevel):
         
         self.protocol("WM_DELETE_WINDOW", self.quit_app)
 
-        # Ya no usamos create_menu() nativo, usamos nuestra propia NavBar
         self.create_header()
         self.create_dashboard_content()
 
@@ -41,12 +39,11 @@ class MainWindow(tk.Toplevel):
             self.master.destroy()
 
     def create_header(self):
-        # --- 1. CONTENEDOR HEADER ---
+       
         header = tk.Frame(self, bg=self.color_header, height=70)
         header.pack(side="top", fill="x")
         header.pack_propagate(False)
 
-        # --- 2. LOGO Y TÍTULO (IZQUIERDA) ---
         left_frame = tk.Frame(header, bg=self.color_header)
         left_frame.pack(side="left", padx=20)
 
@@ -62,35 +59,29 @@ class MainWindow(tk.Toplevel):
 
         tk.Label(left_frame, text="AUTOPY", font=("Segoe UI", 16, "bold"), bg=self.color_header, fg="#FFFFFF").pack(side="left")
 
-        # --- 3. BARRA DE NAVEGACIÓN (CENTRO) ---
         nav_frame = tk.Frame(header, bg=self.color_header)
         nav_frame.pack(side="left", padx=50)
 
-        # Botones de navegación
         self.create_nav_btn(nav_frame, "VEHÍCULOS", lambda: self.open_crud("Vehículos"))
         self.create_nav_btn(nav_frame, "CLIENTES", lambda: self.open_crud("Clientes"))
         self.create_nav_btn(nav_frame, "RENTAS", lambda: self.open_crud("Rentas"))
         self.create_nav_btn(nav_frame, "REPORTES", self.show_reports_menu) # Menú desplegable simulado
 
-        # --- 4. USUARIO Y SISTEMA (DERECHA) ---
         right_frame = tk.Frame(header, bg=self.color_header)
         right_frame.pack(side="right", padx=20)
 
-        # Si es admin, mostramos botón de configuración/backup
         if self.role == "Administrador":
              self.create_icon_btn(right_frame, "⚙️", self.show_admin_menu)
 
-        # Botón de Ayuda
         self.create_icon_btn(right_frame, "❓", self.open_help)
 
-        # Separador visual
+       
         tk.Frame(right_frame, bg="#555", width=1, height=30).pack(side="left", padx=15)
 
-        # Info Usuario
+    
         tk.Label(right_frame, text=self.user_data['user_name'].upper(), font=("Segoe UI", 10, "bold"), 
                  bg=self.color_header, fg="white").pack(side="left")
         
-        # Botón Salir
         tk.Button(right_frame, text="SALIR", font=("Segoe UI", 8, "bold"), bg=self.color_accent, fg="white", 
                   relief="flat", cursor="hand2", padx=10, command=self.quit_app).pack(side="left", padx=15)
 
@@ -103,7 +94,6 @@ class MainWindow(tk.Toplevel):
                         command=command)
         btn.pack(side="left")
         
-        # Efecto Hover (Pasar el mouse)
         btn.bind("<Enter>", lambda e: btn.config(bg=self.color_btn_hover, fg="white"))
         btn.bind("<Leave>", lambda e: btn.config(bg=self.color_header, fg="#cccccc"))
 
@@ -119,18 +109,15 @@ class MainWindow(tk.Toplevel):
         container = tk.Frame(self, bg=self.color_bg)
         container.pack(fill="both", expand=True, padx=50, pady=40)
 
-        # Tarjetas de Acceso Rápido (Dashboard)
         tk.Label(container, text="Panel de Control", font=("Segoe UI", 20, "bold"), bg=self.color_bg, fg="#333").pack(anchor="w", pady=(0, 20))
         
         grid_frame = tk.Frame(container, bg=self.color_bg)
         grid_frame.pack(fill="x")
 
-        # Tarjetas grandes para el centro
         self.create_card(grid_frame, 0, 0, "🚗", "Flota Vehicular", "Administrar autos", "#20c997", lambda: self.open_crud("Vehículos"))
         self.create_card(grid_frame, 0, 1, "👥", "Clientes", "Base de datos", "#17a2b8", lambda: self.open_crud("Clientes"))
         self.create_card(grid_frame, 0, 2, "🔑", "Nueva Renta", "Procesar alquiler", "#007bff", lambda: self.open_crud("Rentas"))
         
-        # Footer de estado
         status_frame = tk.Frame(self, bg="white", height=30)
         status_frame.pack(side="bottom", fill="x")
         tk.Label(status_frame, text=f"Sistema listo. Conectado como {self.role}", font=("Segoe UI", 9), bg="white", fg="#666").pack(side="right", padx=20)
@@ -140,7 +127,6 @@ class MainWindow(tk.Toplevel):
         card.grid(row=row, column=col, padx=15, sticky="nsew")
         parent.grid_columnconfigure(col, weight=1)
         
-        # Borde superior de color
         tk.Frame(card, bg=color, height=4).pack(fill="x", side="top", pady=(0, 15))
         
         tk.Label(card, text=icon, font=("Segoe UI", 32), bg=self.color_card).pack()
@@ -148,16 +134,14 @@ class MainWindow(tk.Toplevel):
         tk.Label(card, text=subtitle, font=("Segoe UI", 9), bg=self.color_card, fg="#888").pack(pady=(0, 15))
         
         tk.Button(card, text="Acceder", bg=color, fg="white", font=("Segoe UI", 9, "bold"), relief="flat", cursor="hand2", command=cmd).pack(fill="x")
-
-    # --- MENÚS DESPLEGABLES SIMULADOS (POPUPS) ---
     
     def show_reports_menu(self):
-        # Crea un menú flotante donde está el mouse
+        # Crea un menú flotante 
         menu = tk.Menu(self, tearoff=0)
         menu.add_command(label="Inventario de Vehículos", command=ReportService.export_simple_vehicles)
         menu.add_command(label="Clientes y Rentas (Maestro)", command=ReportService.export_master_detail)
         menu.add_command(label="Rentas por Fechas", command=self.ask_date_report)
-        # Mostramos el menú en la posición del mouse
+        
         menu.post(self.winfo_pointerx(), self.winfo_pointery())
 
     def show_admin_menu(self):
@@ -166,7 +150,6 @@ class MainWindow(tk.Toplevel):
         menu.add_command(label="Restaurar BD", command=BackupService.restore_backup)
         menu.post(self.winfo_pointerx(), self.winfo_pointery())
 
-    # --- FUNCIONES LÓGICAS ---
     def open_crud(self, module_name):
         if module_name == "Clientes": CustomersWindow(self)
         elif module_name == "Vehículos": VehiclesWindow(self)

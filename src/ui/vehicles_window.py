@@ -9,7 +9,7 @@ class VehiclesWindow(tk.Toplevel):
         self.geometry("1000x650")
         self.config(bg="#F4F6F9")
         
-        # Estilos compartidos (reutilizamos la lógica del anterior visualmente)
+        # Estilos compartidos
         self.style = ttk.Style()
         self.style.theme_use("clam")
         self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#343a40", foreground="white", relief="flat")
@@ -43,7 +43,7 @@ class VehiclesWindow(tk.Toplevel):
         self.create_input(card, "No. Chasis:", self.var_chassis, 1, 0, width=30)
         self.create_input(card, "Tarifa Diaria ($):", self.var_rate, 1, 2)
         
-        # Checkbox estilizado
+        # Checkbox
         tk.Checkbutton(card, text="Vehículo Disponible para Renta", variable=self.var_status, 
                        bg="white", activebackground="white", font=("Segoe UI", 10)).grid(row=2, column=0, columnspan=2, sticky="w", pady=10)
 
@@ -74,7 +74,6 @@ class VehiclesWindow(tk.Toplevel):
             self.tree.heading(c, text=h)
             self.tree.column(c, width=100)
         
-        # Tag para colorear filas
         self.tree.tag_configure("ocupado", foreground="red")
         self.tree.tag_configure("disponible", foreground="green")
 
@@ -99,7 +98,7 @@ class VehiclesWindow(tk.Toplevel):
             self.var_model.set(vals[1])
             self.var_plate.set(vals[2])
             self.var_chassis.set(vals[3])
-            # Limpiar el signo $ para editar
+          
             rate_clean = str(vals[4]).replace("$", "")
             self.var_rate.set(float(rate_clean))
             self.var_status.set(1 if vals[5] == "Disponible" else 0)

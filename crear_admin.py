@@ -1,6 +1,6 @@
 import sqlite3
 import bcrypt
-# Importamos init_db para asegurar que las tablas existan
+# Se utilizo init_db para asegurar que las tablas existan
 from src.database.db import get_connection, init_db 
 
 def create_admin_user():
@@ -23,7 +23,7 @@ def create_admin_user():
     password_hash = bcrypt.hashpw(bytes_password, salt)
     
     try:
-        # 4. Asegurar que existan los roles (por si init_db no los insertó)
+        # 4. Se asegura que existan los roles (por si init_db no los insertó)
         cursor.execute("INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'Administrador')")
         cursor.execute("INSERT OR IGNORE INTO roles (id, name) VALUES (2, 'Agente')")
         

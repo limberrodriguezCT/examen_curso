@@ -80,7 +80,7 @@ class ReportService:
             )
             
             if file_path:
-                # Usamos ExcelWriter para crear múltiples hojas
+                # Use ExcelWriter para crear múltiples hojas
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                     df_master.to_excel(writer, sheet_name="Maestro Clientes", index=False)
                     df_detail.to_excel(writer, sheet_name="Detalle Rentas", index=False)
@@ -107,7 +107,7 @@ class ReportService:
                 JOIN vehicles v ON r.vehicle_id = v.id
                 WHERE r.rental_date BETWEEN ? AND ?
             """
-            # Pandas params funciona seguro contra inyeccion SQL
+            # Pandas params funciona contra las inyeccion SQL
             df = pd.read_sql_query(query, conn, params=(start_date, end_date))
             
             if df.empty:

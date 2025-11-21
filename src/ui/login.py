@@ -8,13 +8,11 @@ class LoginWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Acceso - AutoPy")
-        
-        # --- AJUSTE 1: Ventana un poco más alta para dar aire ---
+    
         self.geometry("360x540") 
         self.resizable(False, False)
         self.logged_user = None
         
-        # --- PALETA DE COLORES ---
         self.color_bg = "#000000"       
         self.color_accent = "#D60000"   
         self.color_input_bg = "#1A1A1A" 
@@ -23,7 +21,6 @@ class LoginWindow(tk.Toplevel):
         
         self.configure(bg=self.color_bg)
         
-        # Centrar en pantalla
         self.update_idletasks()
         width = self.winfo_width()
         height = self.winfo_height()
@@ -35,29 +32,25 @@ class LoginWindow(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def init_ui(self):
-        # Frame central
+        
         container = tk.Frame(self, bg=self.color_bg)
         container.pack(expand=True, fill="both", padx=40, pady=20)
 
-        # --- 1. LOGO ---
         try:
             base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             img_path = os.path.join(base_dir, "assets", "logo.jpg")
             
             pil_img = Image.open(img_path)
-            # Mantenemos el tamaño
+            
             pil_img = pil_img.resize((220, 220), Image.Resampling.LANCZOS)
             self.logo_img = ImageTk.PhotoImage(pil_img)
             
             lbl_logo = tk.Label(container, image=self.logo_img, bg=self.color_bg, bd=0)
-            # --- AJUSTE 2: pady=(40, 20) baja el logo 40px desde arriba ---
             lbl_logo.pack(pady=(40, 20))
         except:
             tk.Label(container, text="AUTOPY", font=("Segoe UI", 30, "bold"), 
                      bg=self.color_bg, fg=self.color_accent).pack(pady=(50, 30))
 
-        # --- 2. CAMPOS DE TEXTO ---
-        # Usuario
         tk.Label(container, text="USUARIO", font=("Segoe UI", 9, "bold"), 
                  bg=self.color_bg, fg=self.color_placeholder).pack(anchor="w", pady=(0, 5))
         
@@ -67,7 +60,6 @@ class LoginWindow(tk.Toplevel):
         self.entry_user.pack(fill="x", ipady=8, pady=(0, 15))
         self.entry_user.focus()
 
-        # Contraseña
         tk.Label(container, text="CONTRASEÑA", font=("Segoe UI", 9, "bold"), 
                  bg=self.color_bg, fg=self.color_placeholder).pack(anchor="w", pady=(0, 5))
         
@@ -76,7 +68,6 @@ class LoginWindow(tk.Toplevel):
                                    insertbackground='white', relief="flat", show="•")
         self.entry_pass.pack(fill="x", ipady=8, pady=(0, 30))
 
-        # --- 3. BOTÓN ---
         self.btn_login = tk.Button(container, text="INICIAR SESIÓN", font=("Segoe UI", 10, "bold"),
                               bg=self.color_accent, fg="white", 
                               activebackground="#ff3333", activeforeground="white",

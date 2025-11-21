@@ -14,11 +14,10 @@ class HelpWindow(tk.Toplevel):
         tk.Button(self, text="Cerrar", command=self.destroy, bg="#6c757d", fg="white").pack(pady=10)
 
     def create_content(self):
-        # Usamos un Notebook (Pestañas) para organizar la ayuda
+        
         notebook = ttk.Notebook(self)
         notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Pestaña 1: Inicio
         f1 = tk.Frame(notebook, bg="white")
         notebook.add(f1, text="Inicio")
         lbl = tk.Label(f1, text="Bienvenido al Sistema AutoPy", font=("Arial", 14, "bold"), bg="white")
@@ -27,7 +26,6 @@ class HelpWindow(tk.Toplevel):
                "Use el menú superior para navegar entre las opciones.")
         tk.Label(f1, text=txt, bg="white", justify="left").pack(pady=10)
 
-        # Pestaña 2: Gestión (CRUDs)
         f2 = tk.Frame(notebook, bg="white")
         notebook.add(f2, text="Gestión")
         info_gestion = (
@@ -37,7 +35,6 @@ class HelpWindow(tk.Toplevel):
         )
         tk.Label(f2, text=info_gestion, bg="white", justify="left", padx=20, pady=20).pack(anchor="w")
 
-        # Pestaña 3: Rentas
         f3 = tk.Frame(notebook, bg="white")
         notebook.add(f3, text="Cómo Rentar")
         info_rentas = (
@@ -49,7 +46,6 @@ class HelpWindow(tk.Toplevel):
         )
         tk.Label(f3, text=info_rentas, bg="white", justify="left", padx=20, pady=20).pack(anchor="w")
 
-        # Pestaña 4: Respaldos
         f4 = tk.Frame(notebook, bg="white")
         notebook.add(f4, text="Respaldos")
         info_backup = (

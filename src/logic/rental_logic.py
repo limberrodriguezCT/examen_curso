@@ -4,6 +4,7 @@ import sqlite3
 class RentalLogic:
     @staticmethod
     def get_available_vehicles():
+        """Trae solo vehículos disponibles (is_available=1)"""
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT id, model, plate_number, daily_rate FROM vehicles WHERE is_available=1")
@@ -13,6 +14,7 @@ class RentalLogic:
 
     @staticmethod
     def get_customers():
+        """Trae todos los clientes"""
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT id, full_name, document_number FROM customers")
@@ -22,6 +24,7 @@ class RentalLogic:
 
     @staticmethod
     def create_rental(customer_id, vehicle_id, days):
+        """Crea la renta y bloquea el vehículo"""
         conn = get_connection()
         try:
             cursor = conn.cursor()
@@ -34,13 +37,13 @@ class RentalLogic:
             rate = row['daily_rate']
             total = rate * float(days)
 
-            # 2. Insertar Renta (Forzamos int() para asegurar que el ID sea numérico)
+            # 2. Insertar Renta (Forzamos int() para asegurar IDs numéricos)
             cursor.execute("""
                 INSERT INTO rentals (customer_id, vehicle_id, total_amount, status)
                 VALUES (?, ?, ?, 'Active')
             """, (int(customer_id), int(vehicle_id), total))
 
-            # 3. Bloquear vehículo
+            # 3. Bloquear vehículo (Ponerlo en 0)
             cursor.execute("UPDATE vehicles SET is_available=0 WHERE id=?", (vehicle_id,))
             
             conn.commit()
@@ -53,34 +56,47 @@ class RentalLogic:
 
     @staticmethod
     def read_all_active():
+        """Trae todas las rentas activas con nombres en vez de IDs"""
         conn = get_connection()
         cursor = conn.cursor()
-        # --- SOLUCIÓN AQUÍ: Usamos AS para dar nombres únicos a las columnas ---
+        
+        # USAMOS LEFT JOIN Y COALESCE PARA QUE NO FALLE SI BORRASTE UN CLIENTE
         query = """
             SELECT 
                 r.id AS rental_id, 
-                c.full_name AS cliente_nombre, 
-                v.model AS vehiculo_modelo, 
-                v.plate_number AS placa, 
+                COALESCE(c.full_name, 'Cliente Eliminado') AS cliente_nombre, 
+                COALESCE(v.model, 'Vehículo Eliminado') AS vehiculo_modelo, 
+                COALESCE(v.plate_number, '---') AS placa, 
                 r.rental_date AS fecha, 
                 r.total_amount AS total, 
                 r.vehicle_id AS vid
             FROM rentals r
-            JOIN customers c ON r.customer_id = c.id
-            JOIN vehicles v ON r.vehicle_id = v.id
+            LEFT JOIN customers c ON r.customer_id = c.id
+            LEFT JOIN vehicles v ON r.vehicle_id = v.id
             WHERE r.status = 'Active'
             ORDER BY r.id DESC
         """
-        data = cursor.fetchall()
-        conn.close()
-        return data
+        try:
+            cursor.execute(query)
+            data = cursor.fetchall()
+            # Mensaje en consola para verificar si hay datos
+            print(f"[DEBUG LOGIC] Se encontraron {len(data)} rentas activas en la BD.")
+            return data
+        except Exception as e:
+            print(f"[ERROR LOGIC] Fallo en consulta: {e}")
+            return []
+        finally:
+            conn.close()
 
     @staticmethod
     def finalize_rental(rental_id, vehicle_id):
+        """Termina la renta y libera el vehículo"""
         conn = get_connection()
         try:
             cursor = conn.cursor()
+            # 1. Marcar renta como completada
             cursor.execute("UPDATE rentals SET status='Completed', return_date=CURRENT_TIMESTAMP WHERE id=?", (rental_id,))
+            # 2. Liberar vehículo
             cursor.execute("UPDATE vehicles SET is_available=1 WHERE id=?", (vehicle_id,))
             conn.commit()
             return True, "Vehículo devuelto."

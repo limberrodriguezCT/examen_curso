@@ -9,13 +9,29 @@ class RentalsWindow(tk.Toplevel):
         self.geometry("1100x750")
         self.config(bg="#F4F6F9")
         
+        # --- ESTILOS VISUALES ---
         self.style = ttk.Style()
         self.style.theme_use("clam")
         
-        # Estilos para asegurar visibilidad (Letra negra)
-        self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#343a40", foreground="white", relief="flat")
-        self.style.configure("Treeview", font=("Segoe UI", 10), rowheight=35, background="white", foreground="black")
-        self.style.map("Treeview", background=[('selected', '#007bff')], foreground=[('selected', 'white')])
+        # Encabezados oscuros
+        self.style.configure("Treeview.Heading", 
+                             font=("Segoe UI", 10, "bold"), 
+                             background="#343a40", 
+                             foreground="white", 
+                             relief="flat")
+        
+        # Filas blancas con letra negra
+        self.style.configure("Treeview", 
+                             font=("Segoe UI", 10), 
+                             rowheight=35, 
+                             background="white", 
+                             foreground="black",
+                             fieldbackground="white")
+        
+        # Selección azul
+        self.style.map("Treeview", 
+                       background=[('selected', '#007bff')], 
+                       foreground=[('selected', 'white')])
 
         self.customers_map = {}
         self.vehicles_map = {}
@@ -23,8 +39,12 @@ class RentalsWindow(tk.Toplevel):
         self.create_header()
         self.create_form()
         self.create_table()
-        self.load_combos()
-        self.load_data()
+        
+        try:
+            self.load_combos()
+            self.load_data()
+        except Exception as e:
+            print(f"Error inicializando datos: {e}")
 
     def create_header(self):
         h = tk.Frame(self, bg="#F4F6F9")
@@ -64,6 +84,7 @@ class RentalsWindow(tk.Toplevel):
                   font=("Segoe UI", 9, "bold"), relief="flat", cursor="hand2", padx=10, pady=5, 
                   command=self.end_rental).pack(side="right")
 
+        # Definición de columnas
         cols = ("id", "cliente", "vehiculo", "placa", "fecha", "total", "vid")
         self.tree = ttk.Treeview(frame, columns=cols, show="headings")
         
@@ -74,7 +95,8 @@ class RentalsWindow(tk.Toplevel):
             self.tree.heading(c, text=h)
             self.tree.column(c, width=w)
         
-        self.tree.column("vid", width=0, stretch=False) 
+        self.tree.column("vid", width=0, stretch=False)
+
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         sc = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree.yview)
@@ -91,21 +113,27 @@ class RentalsWindow(tk.Toplevel):
         self.combo_vehicles['values'] = list(self.vehicles_map.keys())
 
     def load_data(self):
+        # 1. Limpiar
         for item in self.tree.get_children():
             self.tree.delete(item)
         
+        # 2. Traer datos
         rows = RentalLogic.read_all_active()
+        
+       
         for r in rows:
-            # --- USO DE LOS NUEVOS ALIAS ---
-            self.tree.insert("", tk.END, values=(
-                r['rental_id'], 
-                r['cliente_nombre'], 
-                r['vehiculo_modelo'], 
-                r['placa'], 
-                r['fecha'], 
-                f"${r['total']}", 
-                r['vid']
-            ))
+            try:
+                self.tree.insert("", tk.END, values=(
+                    r[0], # Rental ID
+                    r[1], # Cliente Nombre
+                    r[2], # Vehiculo Modelo
+                    r[3], # Placa
+                    r[4], # Fecha
+                    f"${r[5]}", # Total
+                    r[6]  # Vehicle ID (Oculto)
+                ))
+            except Exception as e:
+                print(f"Error visual al insertar fila: {e}")
 
     def save_rental(self):
         c_txt = self.combo_customers.get()
@@ -122,8 +150,8 @@ class RentalsWindow(tk.Toplevel):
         ok, msg = RentalLogic.create_rental(c_id, v_id, days)
         if ok:
             messagebox.showinfo("Renta Procesada", msg)
-            self.load_combos()
-            self.load_data()
+            self.load_combos() 
+            self.load_data()   
             self.entry_days.delete(0, tk.END)
             self.combo_customers.set('')
             self.combo_vehicles.set('')
@@ -137,8 +165,7 @@ class RentalsWindow(tk.Toplevel):
             return
         
         item = self.tree.item(sel[0])
-        if messagebox.askyesno("Devolución", f"¿Confirmar devolución?"):
-            # Usamos índice 0 para ID renta y 6 para ID vehículo (columna oculta)
+        if messagebox.askyesno("Devolución", f"¿Confirmar devolución del vehículo {item['values'][3]}?"):
             RentalLogic.finalize_rental(item['values'][0], item['values'][6])
             self.load_data()
             self.load_combos()
