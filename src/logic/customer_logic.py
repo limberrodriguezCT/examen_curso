@@ -14,7 +14,7 @@ class CustomerLogic:
             conn.commit()
             return True, "Cliente registrado con éxito"
         except sqlite3.IntegrityError:
-            return False, "El número de documento ya existe."
+            return False, "El número de cédula ya existe."
         except Exception as e:
             return False, f"Error desconocido: {e}"
         finally:

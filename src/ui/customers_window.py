@@ -9,7 +9,7 @@ class CustomersWindow(tk.Toplevel):
         self.geometry("1100x700")
         self.config(bg="#F4F6F9") 
         
-        # --- ESTILOS ---
+        #Estilos
         self.style = ttk.Style()
         self.style.theme_use("clam")
         self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), 
@@ -48,7 +48,7 @@ class CustomersWindow(tk.Toplevel):
         tk.Label(card, text="Nombre Completo:", font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=0, column=0, sticky="w", pady=5)
         tk.Entry(card, textvariable=self.var_name, width=40, font=("Segoe UI", 10), bg="#f8f9fa").grid(row=0, column=1, sticky="w", padx=5, ipady=3)
 
-        tk.Label(card, text="No. Documento:", font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=0, column=2, sticky="w", pady=5, padx=(20, 0))
+        tk.Label(card, text="No. de cedula:", font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=0, column=2, sticky="w", pady=5, padx=(20, 0))
         tk.Entry(card, textvariable=self.var_doc, width=20, font=("Segoe UI", 10), bg="#f8f9fa").grid(row=0, column=3, sticky="w", padx=5, ipady=3)
 
         tk.Label(card, text="Teléfono:", font=("Segoe UI", 9, "bold"), bg="white", fg="#555").grid(row=1, column=0, sticky="w", pady=5)
